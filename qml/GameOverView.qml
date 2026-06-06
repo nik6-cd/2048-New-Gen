@@ -1,13 +1,13 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import "components" // чтобы подтянулись твои CustomButton
+import "components" // Підключення кастомних компонентів
 
 Rectangle {
     id: gameOverRoot
-    color: activeTheme.bg // Твой основной темный фон
+    color: activeTheme.bg // Основний темний фон додатка
 
-    // Эти свойства мы передаем при push из StackView
+    // Властивості, що передаються під час push-переходу зі StackView
     property int finalScore: 0
     property int bestScore: 0
 
@@ -16,16 +16,16 @@ Rectangle {
         spacing: 30
         width: parent.width * 0.8
 
-        // Заголовок
+        // Головний заголовок екрана
         Text {
             text: "GAME OVER"
-            color: activeTheme.text // Желтый акцентный цвет
+            color: activeTheme.text // Акцентний колір тексту теми
             font.pixelSize: parent.width * 0.15
             font.bold: true
             Layout.alignment: Qt.AlignHCenter
         }
 
-        // Блок с результатами
+        // Блок відображення результатів гравця
         ColumnLayout {
             spacing: 10
             Layout.alignment: Qt.AlignHCenter
@@ -47,7 +47,7 @@ Rectangle {
             }
         }
 
-        // Кнопки управления
+        // Кнопки керування навігацією
         ColumnLayout {
             spacing: 15
             Layout.topMargin: 20
@@ -60,8 +60,8 @@ Rectangle {
                 bodyColor: activeTheme.bt
                 textColor: activeTheme.text
                 onClicked: {
-                    gameLogic.restart() // Сбрасываем логику
-                    stackView.pop()    // Возвращаемся в игру
+                    gameLogic.restart() // Скидання ігрової логіки до початкового стану
+                    stackView.pop()     // Повернення назад до екрана гри
                 }
             }
 
@@ -72,14 +72,14 @@ Rectangle {
                 bodyColor: activeTheme.bt2
                 textColor: activeTheme.text
                 onClicked: {
-                    // Возвращаемся к самому первому экрану (меню)
+                    // Очищення стека та повернення до найпершого екрана (головного меню)
                     stackView.pop(null)
                 }
             }
         }
     }
 
-    // Анимация появления (чтобы не резко вылетало)
+    // Анімація плавної появи екрана (Fade-in ефект)
     opacity: 0
     NumberAnimation on opacity {
         to: 1

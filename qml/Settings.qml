@@ -5,11 +5,11 @@ import "components"
 
 Rectangle {
     id: settingsRoot
-    color: activeTheme.bg // Глубокий темный фон
+    color: activeTheme.bg // Глибокий темний фон додатка
 
-    // Проверка ориентации: портрет (телефон) или ландшафт (ПК)
+    // Перевірка орієнтації екрана: портретна (смартфон) або ландшафтна (ПК)
     readonly property bool isPortrait: height > width
-    // Базовая единица для масштабирования текста и отступов
+    // Базова одиниця для адаптивного масштабування тексту та відступів
     readonly property real baseUnit: Math.min(width, height)
 
     ColumnLayout {
@@ -25,7 +25,7 @@ Rectangle {
             Layout.alignment: Qt.AlignHCenter
         }
 
-        // --- Блок звука ---
+        // --- БЛОК КЕРУВАННЯ ЗВУКОМ ---
         RowLayout {
             Text {
                 text: "Sound"
@@ -38,7 +38,7 @@ Rectangle {
             }
         }
 
-        // --- Громкость ---
+        // --- ЗАГАЛЬНА ГУЧНІСТЬ (Master Volume) ---
         ColumnLayout {
             Text {
                 text: "Master Volume: " + Math.round(volumeFullSlider.value * 100) + "%"
@@ -54,7 +54,7 @@ Rectangle {
             }
         }
 
-        // --- Громкость ---
+        // --- ГУЧНІСТЬ ЕФЕКТІВ (Action Volume) ---
         ColumnLayout {
             Text {
                 text: "Action Volume: " + Math.round(volumeActiveSlider.value * 100) + "%"
@@ -70,7 +70,7 @@ Rectangle {
             }
         }
 
-        // --- Громкость ---
+        // --- ГУЧНІСТЬ МУЗИКИ (Music Volume) ---
         ColumnLayout {
             Text {
                 text: "Music Volume: " + Math.round(volumeBackSlider.value * 100) + "%"
@@ -86,79 +86,78 @@ Rectangle {
             }
         }
 
-        // --- Выбор темы (Кастомный ComboBox) ---
-                ComboBox {
-                    id: themeSelector
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 45
-                    model: ["Classic", "Neon", "Industrial"]
-                    currentIndex: appSettings.themeIndex
-                    onActivated: appSettings.themeIndex = currentIndex
+        // --- ВИБІР ТЕМИ (Кастомізований ComboBox) ---
+        ComboBox {
+            id: themeSelector
+            Layout.fillWidth: true
+            Layout.preferredHeight: 45
+            model: ["Classic", "Neon", "Industrial"]
+            currentIndex: appSettings.themeIndex
+            onActivated: appSettings.themeIndex = currentIndex
 
-                    // 1. Текст на самой кнопке
-                    contentItem: Text {
-                        leftPadding: 15
-                        text: themeSelector.displayText
-                        font.pixelSize: 16
-                        font.bold: true
-                        color: activeTheme.text
-                        verticalAlignment: Text.AlignVCenter
-                        elide: Text.ElideRight
-                    }
+            // 1. Стилізація тексту на самій кнопці вибору
+            contentItem: Text {
+                leftPadding: 15
+                text: themeSelector.displayText
+                font.pixelSize: 16
+                font.bold: true
+                color: activeTheme.text
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
+            }
 
-                    // 2. Фон основной кнопки
-                    background: Rectangle {
-                        implicitWidth: 120
-                        implicitHeight: 45
-                        color: activeTheme.bt2
-                        border.color: themeSelector.visualFocus ? "#FFFFFF" : "#3A3A45"
-                        border.width: 1
-                        radius: 10
+            // 2. Фон основної кнопки вибору теми
+            background: Rectangle {
+                implicitWidth: 120
+                implicitHeight: 45
+                color: activeTheme.bt2
+                border.color: themeSelector.visualFocus ? "#FFFFFF" : "#3A3A45"
+                border.width: 1
+                radius: 10
+            }
 
+            // 3. Стилізація випадного списку елементів (Popup)
+            popup: Popup {
+                y: themeSelector.height + 5
+                width: themeSelector.width
+                implicitHeight: contentItem.implicitHeight
+                padding: 1
 
-                    }
+                contentItem: ListView {
+                    clip: true
+                    implicitHeight: contentHeight
+                    model: themeSelector.popup.visible ? themeSelector.delegateModel : null
+                    currentIndex: themeSelector.highlightedIndex
 
-                    // 3. Стилизация выпадающего списка
-                    popup: Popup {
-                        y: themeSelector.height + 5
-                        width: themeSelector.width
-                        implicitHeight: contentItem.implicitHeight
-                        padding: 1
-
-                        contentItem: ListView {
-                            clip: true
-                            implicitHeight: contentHeight
-                            model: themeSelector.popup.visible ? themeSelector.delegateModel : null
-                            currentIndex: themeSelector.highlightedIndex
-
-                            ScrollIndicator.vertical: ScrollIndicator { }
-                        }
-
-                        background: Rectangle {
-                            color: activeTheme.bt2
-                            border.color: activeTheme.text
-                            radius: 10
-                        }
-                    }
-
-                    // 4. Стилизация элементов внутри списка (строчки)
-                    delegate: ItemDelegate {
-                        width: themeSelector.width
-                        contentItem: Text {
-                            text: modelData
-                            color: activeTheme.text
-                            font.pixelSize: 16
-                            elide: Text.ElideRight
-                            verticalAlignment: Text.AlignVCenter
-                            leftPadding: 15
-                        }
-                        background: Rectangle {
-                            color: activeTheme.bt3
-                            radius: 5
-                        }
-                    }
+                    ScrollIndicator.vertical: ScrollIndicator { }
                 }
 
+                background: Rectangle {
+                    color: activeTheme.bt2
+                    border.color: activeTheme.text
+                    radius: 10
+                }
+            }
+
+            // 4. Стилізація елементів усередині випадного списку (рядків)
+            delegate: ItemDelegate {
+                width: themeSelector.width
+                contentItem: Text {
+                    text: modelData
+                    color: activeTheme.text
+                    font.pixelSize: 16
+                    elide: Text.ElideRight
+                    verticalAlignment: Text.AlignVCenter
+                    leftPadding: 15
+                }
+                background: Rectangle {
+                    color: activeTheme.bt3
+                    radius: 5
+                }
+            }
+        }
+
+        // --- КНОПКА ПОВЕРНЕННЯ НАЗАД (BACK) ---
         CustomButton {
             text: "Back"
             textColor: activeTheme.text
@@ -172,7 +171,8 @@ Rectangle {
 
             onClicked: {
                 if (typeof stackView !== "undefined") {
-                    stackView.push("qrc:/qt/qml/GameLogic/qml/MainMenu.qml");
+                    // Використовуємо pop() замість push(), щоб коректно вилучити поточний екран зі стека
+                    stackView.pop();
                 }
             }
         }

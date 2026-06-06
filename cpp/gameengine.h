@@ -4,15 +4,15 @@
 #include <QAbstractListModel>
 #include <QList>
 
-// Структура плитки. Обрати внимание: добавились row, col и флаг dying
+// Структура плитки. Зберігає координати та прапорець анімації видалення
 struct TileData {
-    int id;       // Уникальный ID плитки
-    int r;        // Текущая строка
-    int c;        // Текущая колонка
-    int v;        // Номинал
-    int t;        // Тип (1=Обычная, 2=Бомба, 3=Лед, 4=Взрыв)
-    int timer;    // Таймер бомбы
-    bool dying;   // Флаг удаления (для анимации исчезновения после слияния)
+    int id;       // Унікальний ID плитки (для відстеження в QML)
+    int r;        // Поточний рядок (row)
+    int c;        // Поточна колонка (col)
+    int v;        // Номінал плитки (2, 4, 8 і т.д.)
+    int t;        // Тип плитки (1 = Звичайна, 2 = Бомба, 3 = Крига, 4 = Вибух)
+    int timer;    // Таймер зворотного відліку для бомби
+    bool dying;   // Прапорець видалення (для анімації зникнення після злиття/вибуху)
 };
 
 class GameEngine : public QAbstractListModel
@@ -23,7 +23,7 @@ class GameEngine : public QAbstractListModel
     Q_PROPERTY(bool isGameActive READ isGameActive NOTIFY isGameActiveChanged)
 
 public:
-    // Роли для маппинга переменных в QML
+    // Ролі моделі для зв'язування властивостей плитки з QML
     enum TileRoles {
         ValueRole = Qt::UserRole + 1,
         RowRole,
@@ -37,7 +37,7 @@ public:
 
     explicit GameEngine(QObject *parent = nullptr);
 
-    // Обязательные методы QAbstractListModel
+    // Обов'язкові методи для перевизначення в QAbstractListModel
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
@@ -47,6 +47,7 @@ public:
     void setBestScore(int value);
 
 public slots:
+    // Слоти для керування рухом та станом гри з QML
     void moveUp();
     void moveDown();
     void moveLeft();
@@ -62,7 +63,7 @@ signals:
     void isGameActiveChanged();
 
 private:
-    QList<TileData> m_tiles; // Список активных плиток
+    QList<TileData> m_tiles; // Список активних плиток на полі
     int m_score;
     int m_bestScore;
     int m_nextId;
@@ -70,7 +71,7 @@ private:
 
     void spawnTile();
     int getTileIndex(int r, int c) const;
-    bool slideAndMerge(int dr, int dc); // Универсальный сдвиг во все 4 стороны
+    bool slideAndMerge(int dr, int dc); // Універсальний метод зсування та злиття
     void postMove();
     void cleanupDyingTiles();
     bool isGameOver() const;

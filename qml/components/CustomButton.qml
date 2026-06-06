@@ -1,20 +1,18 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 
-
-
 Button {
     id: control
     focusPolicy: Qt.NoFocus
     hoverEnabled: true
 
-    // Свойства, которые можно будет менять снаружи
+    // Зовнішні властивості для кастомізації кнопки
     property color bodyColor: "#16a085"
     property color pressedColor: "#1abc9c"
     property color textColor: "white"
     property int borderRadius: 10
 
-    // 1. СТИЛЬ ТЕКСТА
+    // 1. Стилізація тексту кнопки
     contentItem: Text {
         text: control.text
         font: control.font
@@ -23,24 +21,24 @@ Button {
         verticalAlignment: Text.AlignVCenter
         elide: Text.ElideRight
 
-        // Добавляем небольшую тень для объема (по желанию)
+        // Легке обведення тексту для читабельності та об'єму
         style: Text.Outline
         styleColor: "black"
     }
 
-    // 2. СТИЛЬ ФОНА (Тот самый "CSS")
+    // 2. Стилізація фону (аналог CSS)
     background: Rectangle {
         implicitWidth: 200
         implicitHeight: 50
 
-        // Логика: приоритет у нажатия, потом наведение, потом покой
+        // Логіка кольору: натискання -> наведення курсора (+20% яскравості) -> спокій
         color: control.pressed ? control.pressedColor :
-               control.hovered ? Qt.lighter(control.bodyColor, 1.2) : // +20% яркости
+               control.hovered ? Qt.lighter(control.bodyColor, 1.2) :
                control.bodyColor
 
         radius: control.borderRadius
 
-        // Чтобы переход был мягким, а не дерганым:
+        // Анімація для плавного переходу кольору стану кнопки
         Behavior on color {
             ColorAnimation { duration: 150 }
         }

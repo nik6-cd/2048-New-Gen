@@ -9,11 +9,13 @@ Rectangle {
     color: activeTheme.bg
     focus: true
 
+    // Ініціалізація після повного завантаження компонента
     Component.onCompleted: {
-        gameViewRoot.forceActiveFocus();
-        gameLogic.bestScore = appSettings.bestScore;
+        gameViewRoot.forceActiveFocus(); // Захоплюємо фокус клавіатури
+        gameLogic.bestScore = appSettings.bestScore; // Завантажуємо рекорд із налаштувань
     }
 
+    // Таймер затримки перед переходом на екран Game Over
     Timer {
         id: gameOverTimer
         interval: 800
@@ -22,29 +24,33 @@ Rectangle {
                 "finalScore": gameLogic.score,
                 "bestScore": gameLogic.bestScore
             });
-            gameLogic.restart();
+            gameLogic.restart(); // Скидаємо поле після переходу
         }
     }
 
+    // Відстеження сигналів із C++ ядра (gameLogic)
     Connections {
         target: gameLogic
+
         function onBestScoreChanged() {
-            appSettings.bestScore = gameLogic.bestScore;
+            appSettings.bestScore = gameLogic.bestScore; // Зберігаємо новий рекорд
         }
         function onGameOver() {
-            gameOverTimer.start();
+            gameOverTimer.start(); // Запуск таймера завершення гри
         }
         function onBombExploded() {
             explosionSound.play();
-            explosionEmitter.x = tilesContainer.width / 2 // или координаты бомбы
+            // Центрування емітера частинок на ігровому полі
+            explosionEmitter.x = tilesContainer.width / 2
             explosionEmitter.y = tilesContainer.height / 2
-            explosionEmitter.pulse(150); // Выпускает частицы в течение 300мс
+            explosionEmitter.pulse(150); // Генеруємо спалах частинок протягом 150 мс
         }
         function onTileMoved() {
-            moveSound.play();
+            moveSound.play(); // Звук успішного зсування плиток
         }
     }
 
+    // Розрахунок адаптивної геометрії інтерфейсу
     readonly property bool isPortrait: height > width
     readonly property real baseUnit: Math.min(width, height)
     readonly property real boardSize: isPortrait ? width * 0.9 : height * 0.8
@@ -52,28 +58,24 @@ Rectangle {
     ColumnLayout {
         anchors.fill: parent
 
-        // --- ВЕРХНЯЯ ПАНЕЛЬ ---
+        // --- ВЕРХНЯ ПАНЕЛЬ (Рахунок та Керування) ---
         RowLayout {
             Layout.fillWidth: true
             Layout.preferredHeight: baseUnit * 0.1
 
-            Item {
-                Layout.preferredWidth: gameViewRoot.width * 0.01
-            }
+            Item { Layout.preferredWidth: gameViewRoot.width * 0.01 }
 
             CustomButton {
                 text: "←"
                 Layout.preferredWidth: baseUnit * 0.12
                 Layout.preferredHeight: baseUnit * 0.1
                 bodyColor: activeTheme.bt2
-                onClicked: if (typeof stackView !== "undefined")
-                    stackView.pop()
+                onClicked: if (typeof stackView !== "undefined") stackView.pop()
             }
 
-            Item {
-                Layout.preferredWidth: gameViewRoot.width * 0.01
-            }
+            Item { Layout.preferredWidth: gameViewRoot.width * 0.01 }
 
+            // Поточні очки
             ColumnLayout {
                 spacing: 2
                 Text {
@@ -90,10 +92,9 @@ Rectangle {
                 }
             }
 
-            Item {
-                Layout.fillWidth: true
-            }
+            Item { Layout.fillWidth: true }
 
+            // Найкращий результат
             ColumnLayout {
                 spacing: 2
                 Layout.alignment: Qt.AlignRight
@@ -111,12 +112,10 @@ Rectangle {
                 }
             }
 
-            Item {
-                Layout.preferredWidth: gameViewRoot.width * 0.01
-            }
+            Item { Layout.preferredWidth: gameViewRoot.width * 0.01 }
         }
 
-        // --- ИГРОВОЕ ПОЛЕ ---
+        // --- ІГРОВЕ ПОЛЕ ---
         Rectangle {
             id: backgroundBoard
             Layout.preferredHeight: baseUnit * 0.7
@@ -125,9 +124,11 @@ Rectangle {
             color: Qt.lighter(activeTheme.bg, 0.8)
             radius: 10
 
+            // Обчислення динамічного розміру плиток та відступів
             readonly property real tileSpacing: backgroundBoard.width * 0.025
             readonly property real tileSize: (backgroundBoard.width - (tileSpacing * 5)) / 4
 
+            // Статична задня сітка (16 порожніх клітинок)
             Grid {
                 id: backgroundGrid
                 anchors.centerIn: parent
@@ -145,10 +146,13 @@ Rectangle {
                     }
                 }
             }
+
+            // Контейнер для активних плиток та ефектів
             Item {
                 id: tilesContainer
                 anchors.fill: backgroundGrid
 
+                // Система частинок для ефекту вибуху бомби
                 ParticleSystem {
                     id: explosionSystem
                     anchors.fill: parent
@@ -157,7 +161,7 @@ Rectangle {
                 Emitter {
                     id: explosionEmitter
                     system: explosionSystem
-                    enabled: false // Включаем только при взрыве
+                    enabled: false
                     emitRate: 1000
                     lifeSpan: 500
                     size: 20
@@ -167,13 +171,12 @@ Rectangle {
 
                 ImageParticle {
                     system: explosionSystem
-                    source: "qrc:/qt/qml/GameLogic/resources/assets/circle.png" // Создайте маленький белый кружок или звездочку
-                    color: "#FF4500" // Цвет огня
+                    source: "qrc:/qt/qml/GameLogic/resources/assets/circle.png"
+                    color: "#FF4500" // Вогняний колір частинок
                 }
 
-
+                // Відображення активних плиток на основі C++ моделі
                 Repeater {
-                    // gameLogic теперь является полноценной моделью данных
                     model: gameLogic
 
                     Rectangle {
@@ -182,15 +185,15 @@ Rectangle {
                         height: width
                         radius: 5
 
-                        // Координаты теперь ЖЕСТКО привязаны к ролям row и col из C++
+                        // Розрахунок позиції через C++ ролі 'row' та 'col'
                         x: col * (width + backgroundBoard.tileSpacing)
                         y: row * (height + backgroundBoard.tileSpacing)
 
-                        // Стартуем с 0 для анимации "вылупления"
+                        // Початковий стан для ефекту появи (плавне масштабування)
                         scale: 0
                         opacity: 0
 
-                        // Как только компонент создан, привязываем значения к состоянию dying
+                        // Динамічне зв'язування станів згортання/видалення плитки (dying)
                         Component.onCompleted: {
                             scale = Qt.binding(function () {
                                 return dying ? 0.6 : 1.0;
@@ -200,40 +203,29 @@ Rectangle {
                             });
                         }
 
-                        // --- МАГИЯ АНИМАЦИЙ ЗДЕСЬ ---
+                        // --- АНІМАЦІЇ ПЕРЕМІЩЕННЯ ТА СТАНІВ ---
                         Behavior on x {
-                            NumberAnimation {
-                                duration: 200
-                                easing.type: Easing.OutQuad
-                            }
+                            NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
                         }
                         Behavior on y {
-                            NumberAnimation {
-                                duration: 200
-                                easing.type: Easing.OutQuad
-                            }
+                            NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
                         }
                         Behavior on opacity {
-                            NumberAnimation {
-                                duration: 200
-                            }
+                            NumberAnimation { duration: 200 }
                         }
                         Behavior on scale {
-                            NumberAnimation {
-                                duration: 250
-                                easing.type: Easing.OutBack
-                            }
-                        } // Эффект пружинки
+                            // Ефект "пружини" (OutBack) під час появи нової плитки
+                            NumberAnimation { duration: 250; easing.type: Easing.OutBack }
+                        }
 
-                        // Покраска
+                        // Стилізація кольору плитки залежно від її типу та номіналу
                         color: {
-                            if (t === 2)
-                                return "#E74C3C"; // Бомба
-                            if (t === 3)
-                                return "#74B9FF"; // Лед
+                            if (t === 2) return "#E74C3C"; // Бомба
+                            if (t === 3) return "#74B9FF"; // Крига
                             return v === 2 ? "#EEE4DA" : v === 4 ? "#EDE0C8" : v === 8 ? "#F2B179" : v === 16 ? "#F59563" : v === 32 ? "#F67C5F" : v === 64 ? "#F65E3B" : v >= 128 ? "#EDCF72" : "#3A3A45";
                         }
 
+                        // Відображення номіналу плитки
                         Text {
                             anchors.centerIn: parent
                             text: v.toString()
@@ -244,12 +236,10 @@ Rectangle {
                             minimumPixelSize: 10
                         }
 
-                        // Таймер для бомбы или прочность для льда
+                        // Іконка та значення таймера для спец-плиток (Бомба/Крига)
                         Text {
-                            visible: t === 2 || t === 3 // Показываем и для бомбы, и для льда
-                            // Для бомбы показываем часики, для льда - снежинку
+                            visible: t === 2 || t === 3
                             text: t === 2 ? "⏱" + timer : "❄️" + timer
-
                             color: "#FFFFFF"
                             font.pixelSize: parent.height * 0.18
                             font.bold: true
@@ -262,7 +252,7 @@ Rectangle {
             }
         }
 
-        // --- НИЖНЯЯ ПАНЕЛЬ ---
+        // --- НИЖНЯ ПАНЕЛЬ (Кнопка перезапуску) ---
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: boardSize
@@ -271,7 +261,6 @@ Rectangle {
             CustomButton {
                 text: "Restart"
                 Layout.alignment: Qt.AlignHCenter
-
                 Layout.preferredWidth: tilesContainer.width
                 Layout.preferredHeight: baseUnit * 0.1
                 bodyColor: activeTheme.bt
@@ -282,22 +271,19 @@ Rectangle {
         }
     }
 
+    // Обробка подій натискання клавіш стрілок клавіатури
     Keys.onPressed: event => {
         switch (event.key) {
         case Qt.Key_Left:
-
             gameLogic.moveLeft();
             break;
         case Qt.Key_Right:
-
             gameLogic.moveRight();
             break;
         case Qt.Key_Up:
-
             gameLogic.moveUp();
             break;
         case Qt.Key_Down:
-
             gameLogic.moveDown();
             break;
         }

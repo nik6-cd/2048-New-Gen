@@ -7,21 +7,23 @@ Rectangle {
     id: menuRoot
     color: activeTheme.bg
 
-    // Проверка ориентации: портрет (телефон) или ландшафт (ПК)
+    // Перевірка орієнтації екрана: портретна (смартфон) або ландшафтна (ПК)
     readonly property bool isPortrait: height > width
-    // Базовая единица для масштабирования текста и отступов
+
+    // Базова одиниця для адаптивного масштабування тексту та відступів
     readonly property real baseUnit: Math.min(width, height)
 
     ColumnLayout {
-        // Растягиваем лейаут на всё доступное пространство
+        // Розтягуємо компонувальник (layout) на весь доступний простір вікна
         anchors.fill: parent
         spacing: 0
 
+        // Верхній порожній відступ (простір над заголовком)
         Item {
             Layout.preferredHeight: isPortrait ? parent.height * 0.24 : parent.height * 0.30
         }
 
-        // --- ЗАГОЛОВОК ---
+        // --- ЗАГОЛОВОК ГРИ ---
         Item {
             Layout.preferredHeight: parent.height * 0.16
             Layout.alignment: Qt.AlignHCenter
@@ -32,19 +34,18 @@ Rectangle {
                 font.pixelSize: baseUnit * 0.12
                 font.family: caveatFont.name
                 font.bold: true
-                anchors.centerIn: parent
-                // Центрируем внутри лейаута
-
+                anchors.centerIn: parent // Центруємо текст всередині контейнера
             }
         }
 
+        // Проміжний порожній відступ між заголовком та кнопками
         Item {
             Layout.preferredHeight: isPortrait ? parent.height * 0.28 : parent.height * 0.1
         }
 
-        // --- КНОПКА PLAY ---
+        // --- КНОПКА PLAY / CONTINUE ---
         CustomButton {
-            // Используем тернарный оператор для смены текста
+            // Динамічна зміна тексту залежно від стану ігрової сесії
             text: (gameLogic.isGameActive) ? "Continue" : "Play"
             textColor: activeTheme.text
             font.family: "Montserrat"
@@ -57,7 +58,7 @@ Rectangle {
 
             onClicked: {
                 if (typeof stackView !== "undefined") {
-                    stackView.push("qrc:/qt/qml/GameLogic/qml/GameView.qml");
+                    stackView.push("qrc:/qt/qml/GameLogic/qml/GameView.qml"); // Перехід до екрана гри
                 }
             }
         }
@@ -66,7 +67,7 @@ Rectangle {
             Layout.preferredHeight: parent.height * 0.02
         }
 
-        // --- КНОПКА SETTINGS ---
+        // --- КНОПКА НАЛАШТУВАНЬ (SETTINGS) ---
         CustomButton {
             text: "Settings"
             textColor: activeTheme.text
@@ -80,7 +81,7 @@ Rectangle {
 
             onClicked: {
                 if (typeof stackView !== "undefined") {
-                    stackView.push("qrc:/qt/qml/GameLogic/qml/Settings.qml");
+                    stackView.push("qrc:/qt/qml/GameLogic/qml/Settings.qml"); // Перехід до налаштувань
                 }
             }
         }
@@ -89,6 +90,7 @@ Rectangle {
             Layout.preferredHeight: parent.height * 0.02
         }
 
+        // --- КНОПКА ВИХОДУ (EXIT) ---
         CustomButton {
             text: "Exit"
             textColor: activeTheme.text
@@ -101,9 +103,11 @@ Rectangle {
             Layout.preferredHeight: parent.height * 0.06
 
             onClicked: {
-                Qt.quit();
+                Qt.quit(); // Завершення роботи програми
             }
         }
+
+        // Нижній порожній відступ для балансу композиції меню
         Item {
             Layout.preferredHeight: isPortrait ? parent.height * 0.04 : parent.height * 0.16
         }
