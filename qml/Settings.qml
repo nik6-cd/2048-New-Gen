@@ -1,0 +1,180 @@
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
+import "components"
+
+Rectangle {
+    id: settingsRoot
+    color: activeTheme.bg // Глубокий темный фон
+
+    // Проверка ориентации: портрет (телефон) или ландшафт (ПК)
+    readonly property bool isPortrait: height > width
+    // Базовая единица для масштабирования текста и отступов
+    readonly property real baseUnit: Math.min(width, height)
+
+    ColumnLayout {
+        anchors.centerIn: parent
+        width: parent.width * 0.8
+        spacing: 20
+
+        Text {
+            text: "Settings"
+            color: activeTheme.text
+            font.pixelSize: 32
+            font.bold: true
+            Layout.alignment: Qt.AlignHCenter
+        }
+
+        // --- Блок звука ---
+        RowLayout {
+            Text {
+                text: "Sound"
+                color: activeTheme.text
+                Layout.fillWidth: true
+            }
+            Switch {
+                checked: appSettings.soundEnabled
+                onPositionChanged: appSettings.soundEnabled = checked
+            }
+        }
+
+        // --- Громкость ---
+        ColumnLayout {
+            Text {
+                text: "Master Volume: " + Math.round(volumeFullSlider.value * 100) + "%"
+                color: activeTheme.text
+            }
+            Slider {
+                id: volumeFullSlider
+                Layout.fillWidth: true
+                from: 0
+                to: 1
+                value: appSettings.fullVolume
+                onMoved: appSettings.fullVolume = value
+            }
+        }
+
+        // --- Громкость ---
+        ColumnLayout {
+            Text {
+                text: "Action Volume: " + Math.round(volumeActiveSlider.value * 100) + "%"
+                color: activeTheme.text
+            }
+            Slider {
+                id: volumeActiveSlider
+                Layout.fillWidth: true
+                from: 0
+                to: 1
+                value: appSettings.actionVolume
+                onMoved: appSettings.actionVolume = value
+            }
+        }
+
+        // --- Громкость ---
+        ColumnLayout {
+            Text {
+                text: "Music Volume: " + Math.round(volumeBackSlider.value * 100) + "%"
+                color: activeTheme.text
+            }
+            Slider {
+                id: volumeBackSlider
+                Layout.fillWidth: true
+                from: 0
+                to: 1
+                value: appSettings.backVolume
+                onMoved: appSettings.backVolume = value
+            }
+        }
+
+        // --- Выбор темы (Кастомный ComboBox) ---
+                ComboBox {
+                    id: themeSelector
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 45
+                    model: ["Classic", "Neon", "Industrial"]
+                    currentIndex: appSettings.themeIndex
+                    onActivated: appSettings.themeIndex = currentIndex
+
+                    // 1. Текст на самой кнопке
+                    contentItem: Text {
+                        leftPadding: 15
+                        text: themeSelector.displayText
+                        font.pixelSize: 16
+                        font.bold: true
+                        color: activeTheme.text
+                        verticalAlignment: Text.AlignVCenter
+                        elide: Text.ElideRight
+                    }
+
+                    // 2. Фон основной кнопки
+                    background: Rectangle {
+                        implicitWidth: 120
+                        implicitHeight: 45
+                        color: activeTheme.bt2
+                        border.color: themeSelector.visualFocus ? "#FFFFFF" : "#3A3A45"
+                        border.width: 1
+                        radius: 10
+
+
+                    }
+
+                    // 3. Стилизация выпадающего списка
+                    popup: Popup {
+                        y: themeSelector.height + 5
+                        width: themeSelector.width
+                        implicitHeight: contentItem.implicitHeight
+                        padding: 1
+
+                        contentItem: ListView {
+                            clip: true
+                            implicitHeight: contentHeight
+                            model: themeSelector.popup.visible ? themeSelector.delegateModel : null
+                            currentIndex: themeSelector.highlightedIndex
+
+                            ScrollIndicator.vertical: ScrollIndicator { }
+                        }
+
+                        background: Rectangle {
+                            color: activeTheme.bt2
+                            border.color: activeTheme.text
+                            radius: 10
+                        }
+                    }
+
+                    // 4. Стилизация элементов внутри списка (строчки)
+                    delegate: ItemDelegate {
+                        width: themeSelector.width
+                        contentItem: Text {
+                            text: modelData
+                            color: activeTheme.text
+                            font.pixelSize: 16
+                            elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
+                            leftPadding: 15
+                        }
+                        background: Rectangle {
+                            color: activeTheme.bt3
+                            radius: 5
+                        }
+                    }
+                }
+
+        CustomButton {
+            text: "Back"
+            textColor: activeTheme.text
+            font.family: "Montserrat"
+            font.pixelSize: Math.max(baseUnit * 0.04, 18)
+            bodyColor: activeTheme.bt
+
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: isPortrait ? parent.width * 0.85 : Math.min(parent.width * 0.4, 500)
+            Layout.preferredHeight: Math.max(parent.height * 0.08, 50)
+
+            onClicked: {
+                if (typeof stackView !== "undefined") {
+                    stackView.push("qrc:/qt/qml/GameLogic/qml/MainMenu.qml");
+                }
+            }
+        }
+    }
+}
